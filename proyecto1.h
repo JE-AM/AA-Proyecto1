@@ -39,6 +39,7 @@ typedef struct {
     int grid_order;              // Orden actual de la cuadrícula de etiquetas
     int current_number;          // Número actual a colocar (para modo paso a paso)
     int current_row, current_col; // Posición actual en el algoritmo
+    int start_row, start_col;    // Posición inicial randomizada para el algoritmo
     MagicMethod method;          // Método seleccionado para generar el cuadrado
     gboolean is_active;          // Indica si hay una generación en proceso
 

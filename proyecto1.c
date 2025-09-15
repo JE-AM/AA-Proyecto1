@@ -242,11 +242,17 @@ void create_magic_grid(AppData *data) {
             // Crear etiqueta vacía para cada celda
             data->grid_labels[i][j] = gtk_label_new("");
 
-            // Configurar tamaño de la celda (50x50 píxeles)
-            gtk_widget_set_size_request(data->grid_labels[i][j], 50, 50);
+            // Configurar tamaño de la celda dinámicamente basado en el orden
+            int cell_size = 60 - (data->order - 3) * 2; // Reducir tamaño conforme aumenta el orden
+            if (cell_size < 25) cell_size = 25; // Tamaño mínimo
+            gtk_widget_set_size_request(data->grid_labels[i][j], cell_size, cell_size);
 
-            // Configurar formato del texto (fuente negrita, tamaño 14)
-            gtk_label_set_markup(GTK_LABEL(data->grid_labels[i][j]), "<span font='14' weight='bold'> </span>");
+            // Configurar formato del texto con tamaño dinámico
+            int font_size = 16 - (data->order - 3) * 1; // Reducir fuente conforme aumenta el orden
+            if (font_size < 8) font_size = 8; // Tamaño mínimo de fuente
+            char markup[64];
+            snprintf(markup, sizeof(markup), "<span font='%d' weight='bold'> </span>", font_size);
+            gtk_label_set_markup(GTK_LABEL(data->grid_labels[i][j]), markup);
 
             // Centrar el contenido de la etiqueta
             gtk_widget_set_halign(data->grid_labels[i][j], GTK_ALIGN_CENTER);
@@ -279,13 +285,19 @@ void update_grid_display(AppData *data) {
     for (int i = 0; i < data->order; i++) {
         for (int j = 0; j < data->order; j++) {
             if (data->magic_square[i][j] != 0) {
-                // Formatear el número con estilo negrita
+                // Formatear el número con estilo negrita y tamaño dinámico
+                int font_size = 16 - (data->order - 3) * 1; // Reducir fuente conforme aumenta el orden
+                if (font_size < 8) font_size = 8; // Tamaño mínimo de fuente
                 char text[64];
-                snprintf(text, sizeof(text), "<span font='14' weight='bold'>%d</span>", data->magic_square[i][j]);
+                snprintf(text, sizeof(text), "<span font='%d' weight='bold'>%d</span>", font_size, data->magic_square[i][j]);
                 gtk_label_set_markup(GTK_LABEL(data->grid_labels[i][j]), text);
             } else {
                 // Mostrar celda vacía
-                gtk_label_set_markup(GTK_LABEL(data->grid_labels[i][j]), "<span font='14' weight='bold'> </span>");
+                int font_size = 16 - (data->order - 3) * 1; // Reducir fuente conforme aumenta el orden
+                if (font_size < 8) font_size = 8; // Tamaño mínimo de fuente
+                char markup[64];
+                snprintf(markup, sizeof(markup), "<span font='%d' weight='bold'> </span>", font_size);
+                gtk_label_set_markup(GTK_LABEL(data->grid_labels[i][j]), markup);
             }
         }
     }
@@ -532,9 +544,14 @@ void on_start_clicked(GtkWidget *widget, AppData *data) {
     data->diagonal1_sum = 0;
     data->diagonal2_sum = 0;
 
+    // Generar posición inicial aleatoria (no utilizada por los algoritmos actuales)
+    srand(time(NULL));
+    data->start_row = rand() % order;
+    data->start_col = rand() % order;
+
     // Inicializar parámetros para la generación paso a paso
-    data->current_row = 0;
-    data->current_col = 0;
+    data->current_row = data->start_row;
+    data->current_col = data->start_col;
     data->current_number = 1;
     data->is_active = TRUE;
 
@@ -583,7 +600,7 @@ void on_complete_clicked(GtkWidget *widget, AppData *data) {
     if (data->is_active) {
         // Generar el cuadrado mágico completo
         int temp_square[data->order][data->order];
-        generateMagicSquare(data->order, temp_square, data->method, data->current_row, data->current_col);
+        generateMagicSquare(data->order, temp_square, data->method, data->start_row, data->start_col);
 
         // Copiar el cuadrado generado al cuadrado visible
         for (int i = 0; i < data->order; i++) {
